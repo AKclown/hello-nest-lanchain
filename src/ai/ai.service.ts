@@ -72,30 +72,30 @@ const database = {
   },
 };
 
-const queryUserArgsSchema = z.object({
-  userId: z.string().describe('用户 ID，例如: 001, 002, 003'),
-});
+// const queryUserArgsSchema = z.object({
+//   userId: z.string().describe('用户 ID，例如: 001, 002, 003'),
+// });
 
-type QueryUserArgs = {
-  userId: string;
-};
+// type QueryUserArgs = {
+//   userId: string;
+// };
 
-const queryUserTool = tool(
-  ({ userId }: QueryUserArgs) => {
-    const user = database.users[userId] as Record<string, string>;
-    if (!user) {
-      return `用户 ID ${userId} 不存在。可用的 ID: 001, 002, 003`;
-    }
+// const queryUserTool = tool(
+//   ({ userId }: QueryUserArgs) => {
+//     const user = database.users[userId] as Record<string, string>;
+//     if (!user) {
+//       return `用户 ID ${userId} 不存在。可用的 ID: 001, 002, 003`;
+//     }
 
-    return `用户信息：\n- ID: ${user.id}\n- 姓名: ${user.name}\n- 邮箱: ${user.email}\n- 角色: ${user.role}`;
-  },
-  {
-    name: 'query_user',
-    description:
-      '查询数据库中的用户信息。输入用户 ID，返回该用户的详细信息（姓名、邮箱、角色）。',
-    schema: queryUserArgsSchema,
-  },
-);
+//     return `用户信息：\n- ID: ${user.id}\n- 姓名: ${user.name}\n- 邮箱: ${user.email}\n- 角色: ${user.role}`;
+//   },
+//   {
+//     name: 'query_user',
+//     description:
+//       '查询数据库中的用户信息。输入用户 ID，返回该用户的详细信息（姓名、邮箱、角色）。',
+//     schema: queryUserArgsSchema,
+//   },
+// );
 
 @Injectable()
 export class AiService {
@@ -104,8 +104,11 @@ export class AiService {
   // Runnable类型第一个为输入类型，第二个为输出类型
   private readonly modeWithTools: Runnable<BaseMessage[], AIMessage>;
 
-  constructor(@Inject('CHAT_MODEL') model: ChatOpenAI) {
-    this.modeWithTools = model.bindTools([queryUserTool]);
+  constructor(
+    @Inject('CHAT_MODEL') model: ChatOpenAI,
+    @Inject('QUERY_USER_TOOL') private readonly queryUserTool: any,
+  ) {
+    this.modeWithTools = model.bindTools([this.queryUserTool]);
 
     // $ ai
     // const prompt = PromptTemplate.fromTemplate(`请回答以下问题：\n\n{query}`);
@@ -113,48 +116,48 @@ export class AiService {
     // this.chain = prompt.pipe(model).pipe(new StringOutputParser());
   }
 
-  async runChain(query: string): Promise<string> {
-    // return this.chain.invoke({ query }) as Promise<string>;
+  // async runChain(query: string): Promise<string> {
+  //   // return this.chain.invoke({ query }) as Promise<string>;
 
-    const messages: BaseMessage[] = [
-      new SystemMessage(
-        '你是一个智能助手，可以在需要时调用工具(如query_user)来查询用户信息，再用结果回答用户的问题',
-      ),
-      new HumanMessage(query),
-    ];
+  //   const messages: BaseMessage[] = [
+  //     new SystemMessage(
+  //       '你是一个智能助手，可以在需要时调用工具(如query_user)来查询用户信息，再用结果回答用户的问题',
+  //     ),
+  //     new HumanMessage(query),
+  //   ];
 
-    while (true) {
-      const aiMessage = await this.modeWithTools.invoke(messages);
-      messages.push(aiMessage);
+  //   while (true) {
+  //     const aiMessage = await this.modeWithTools.invoke(messages);
+  //     messages.push(aiMessage);
 
-      const toolCalls = aiMessage.tool_calls ?? [];
+  //     const toolCalls = aiMessage.tool_calls ?? [];
 
-      if (!toolCalls.length) {
-        return aiMessage.content as string;
-      }
+  //     if (!toolCalls.length) {
+  //       return aiMessage.content as string;
+  //     }
 
-      // 依次执行本轮需要调用的所有工具
-      for (const toolCall of toolCalls) {
-        const toolCallId = toolCall.id || '';
-        const toolName = toolCall.name;
+  //     // 依次执行本轮需要调用的所有工具
+  //     for (const toolCall of toolCalls) {
+  //       const toolCallId = toolCall.id || '';
+  //       const toolName = toolCall.name;
 
-        if (toolName === 'query_user') {
-          console.log('toolCall.args: ', toolCall.args);
-          const args = queryUserArgsSchema.parse(toolCall.args);
-          console.log('args: ', args);
-          const result = await queryUserTool.invoke(args);
+  //       if (toolName === 'query_user') {
+  //         console.log('toolCall.args: ', toolCall.args);
+  //         const args = queryUserArgsSchema.parse(toolCall.args);
+  //         console.log('args: ', args);
+  //         const result = await queryUserTool.invoke(args);
 
-          messages.push(
-            new ToolMessage({
-              tool_call_id: toolCallId,
-              name: toolName,
-              content: result,
-            }),
-          );
-        }
-      }
-    }
-  }
+  //         messages.push(
+  //           new ToolMessage({
+  //             tool_call_id: toolCallId,
+  //             name: toolName,
+  //             content: result,
+  //           }),
+  //         );
+  //       }
+  //     }
+  //   }
+  // }
 
   async *runChainStream(query: string): AsyncGenerator<string> {
     // return this.chain.invoke({ query }) as Promise<string>;
@@ -203,10 +206,7 @@ export class AiService {
         const toolName = toolCall.name;
 
         if (toolName === 'query_user') {
-          console.log('toolCall.args: ', toolCall.args);
-          const args = queryUserArgsSchema.parse(toolCall.args);
-          console.log('args: ', args);
-          const result = await queryUserTool.invoke(args);
+          const result = await this.queryUserTool.invoke(toolCall.args);
 
           messages.push(
             new ToolMessage({

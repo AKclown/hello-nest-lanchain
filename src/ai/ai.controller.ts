@@ -14,6 +14,7 @@ export class AiController {
 
   @Sse('chat/stream')
   chatStream(@Query('query') query: string): Observable<{ data: string }> {
+    console.log(`接收到参数`, query);
     // rxjs 专门处理异步数据流的工具库
     return from(this.aiService.runChainStream(query)).pipe(
       map((chunk) => ({ data: chunk })),

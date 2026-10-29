@@ -107,8 +107,12 @@ export class AiService {
   constructor(
     @Inject('CHAT_MODEL') model: ChatOpenAI,
     @Inject('QUERY_USER_TOOL') private readonly queryUserTool: any,
+    @Inject('SEND_MAIL_TOOL') private readonly sendMailTool: any,
   ) {
-    this.modeWithTools = model.bindTools([this.queryUserTool]);
+    this.modeWithTools = model.bindTools([
+      this.queryUserTool!,
+      this.sendMailTool!,
+    ]);
 
     // $ ai
     // const prompt = PromptTemplate.fromTemplate(`请回答以下问题：\n\n{query}`);
@@ -207,6 +211,16 @@ export class AiService {
 
         if (toolName === 'query_user') {
           const result = await this.queryUserTool.invoke(toolCall.args);
+
+          messages.push(
+            new ToolMessage({
+              tool_call_id: toolCallId,
+              name: toolName,
+              content: result,
+            }),
+          );
+        } else if (toolName === 'send_mail') {
+          const result = await this.sendMailTool.invoke(toolCall.args);
 
           messages.push(
             new ToolMessage({

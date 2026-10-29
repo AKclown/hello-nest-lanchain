@@ -12,6 +12,14 @@ export class AiController {
     return { answer };
   }
 
+  @Sse('chat/stream')
+  chatStream(@Query('query') query: string): Observable<{ data: string }> {
+    // rxjs 专门处理异步数据流的工具库
+    return from(this.aiService.runChainStream(query)).pipe(
+      map((chunk) => ({ data: chunk })),
+    );
+  }
+
   // @Sse('chat/stream')
   // chatStream(@Query('query') query: string): Observable<{ data: string }> {
   //   // rxjs 专门处理异步数据流的工具库

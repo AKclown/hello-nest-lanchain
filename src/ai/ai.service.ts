@@ -106,14 +106,16 @@ export class AiService {
 
   constructor(
     @Inject('CHAT_MODEL') model: ChatOpenAI,
-    @Inject('QUERY_USER_TOOL') private readonly queryUserTool: any,
+    // @Inject('QUERY_USER_TOOL') private readonly queryUserTool: any,
     @Inject('SEND_MAIL_TOOL') private readonly sendMailTool: any,
     @Inject('WEB_SEARCH_TOOL') private readonly webSearchTool: any,
+    @Inject('DB_USERS_CURD_TOOL') private readonly dbUsersCrudTool: any,
   ) {
     this.modeWithTools = model.bindTools([
-      this.queryUserTool,
+      // this.queryUserTool,
       this.sendMailTool,
       this.webSearchTool,
+      this.dbUsersCrudTool,
     ]);
 
     // $ ai
@@ -211,17 +213,18 @@ export class AiService {
         const toolCallId = toolCall.id || '';
         const toolName = toolCall.name;
 
-        if (toolName === 'query_user') {
-          const result = await this.queryUserTool.invoke(toolCall.args);
+        // if (toolName === 'query_user') {
+        //   const result = await this.queryUserTool.invoke(toolCall.args);
 
-          messages.push(
-            new ToolMessage({
-              tool_call_id: toolCallId,
-              name: toolName,
-              content: result,
-            }),
-          );
-        } else if (toolName === 'send_mail') {
+        //   messages.push(
+        //     new ToolMessage({
+        //       tool_call_id: toolCallId,
+        //       name: toolName,
+        //       content: result,
+        //     }),
+        //   );
+        // } else
+        if (toolName === 'send_mail') {
           const result = await this.sendMailTool.invoke(toolCall.args);
 
           messages.push(
@@ -233,6 +236,16 @@ export class AiService {
           );
         } else if (toolName === 'web_search') {
           const result = await this.webSearchTool.invoke(toolCall.args);
+
+          messages.push(
+            new ToolMessage({
+              tool_call_id: toolCallId,
+              name: toolName,
+              content: result,
+            }),
+          );
+        } else if (toolName === 'db_users_curd') {
+          const result = await this.dbUsersCrudTool.invoke(toolCall.args);
 
           messages.push(
             new ToolMessage({

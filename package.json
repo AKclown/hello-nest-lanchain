@@ -29,9 +29,13 @@
     "@nestjs/mapped-types": "*",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/serve-static": "^5.0.4",
+    "@nestjs/typeorm": "^12.0.2",
+    "class-validator": "^0.15.1",
+    "mysql2": "^3.24.6",
     "nodemailer": "^10.3.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
+    "typeorm": "^1.1.2",
     "zod": "^4.6.7"
   },
   "devDependencies": {

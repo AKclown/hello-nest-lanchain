@@ -10,9 +10,18 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './users/users.module';
 import { User } from './users/entities/user.entity';
+import { Job } from './job/entities/job.entity';
+import {
+  CronExpression,
+  ScheduleModule,
+  SchedulerRegistry,
+} from '@nestjs/schedule';
+import { JobModule } from './job/job.module';
+import { ToolModule } from './tool/tool.module';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     TypeOrmModule.forRootAsync({
       useFactory(configService: ConfigService) {
         return {
@@ -22,7 +31,7 @@ import { User } from './users/entities/user.entity';
           username: configService.get<string>('mysql_server_username'),
           password: configService.get<string>('mysql_server_password'),
           database: configService.get<string>('mysql_server_database'),
-          entities: [User],
+          entities: [User, Job],
           synchronize: true,
           logging: true,
           poolSize: 10,
@@ -65,6 +74,7 @@ import { User } from './users/entities/user.entity';
       envFilePath: '.env',
     }),
     UsersModule,
+    JobModule,
   ],
   controllers: [AppController],
   providers: [AppService],

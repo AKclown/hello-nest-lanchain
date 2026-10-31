@@ -19,6 +19,7 @@ import {
 import { JobModule } from './job/job.module';
 import { ToolModule } from './tool/tool.module';
 import { SpeechModule } from './speech/speech.module';
+import { AiVercelModule } from './ai-vercel/ai-vercel.module';
 
 @Module({
   imports: [
@@ -77,6 +78,7 @@ import { SpeechModule } from './speech/speech.module';
     UsersModule,
     JobModule,
     SpeechModule,
+    AiVercelModule,
   ],
   controllers: [AppController],
   providers: [AppService],

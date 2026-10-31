@@ -12,20 +12,20 @@ export class AiController {
   //   return { answer };
   // }
 
-  @Sse('chat/stream')
-  chatStream(@Query('query') query: string): Observable<{ data: string }> {
-    console.log(`接收到参数`, query);
-    // rxjs 专门处理异步数据流的工具库
-    return from(this.aiService.runChainStream(query)).pipe(
-      map((chunk) => ({ data: chunk })),
-    );
-  }
-
   // @Sse('chat/stream')
   // chatStream(@Query('query') query: string): Observable<{ data: string }> {
+  //   console.log(`接收到参数`, query);
   //   // rxjs 专门处理异步数据流的工具库
-  //   return from(this.aiService.streamChain(query)).pipe(
+  //   return from(this.aiService.runChainStream(query)).pipe(
   //     map((chunk) => ({ data: chunk })),
   //   );
   // }
+
+  @Sse('chat/stream')
+  chatStream(@Query('query') query: string): Observable<{ data: string }> {
+    // rxjs 专门处理异步数据流的工具库
+    return from(this.aiService.streamChain(query)).pipe(
+      map((chunk) => ({ data: chunk })),
+    );
+  }
 }

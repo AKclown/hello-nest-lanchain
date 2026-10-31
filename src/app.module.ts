@@ -18,6 +18,7 @@ import {
 } from '@nestjs/schedule';
 import { JobModule } from './job/job.module';
 import { ToolModule } from './tool/tool.module';
+import { SpeechModule } from './speech/speech.module';
 
 @Module({
   imports: [
@@ -75,6 +76,7 @@ import { ToolModule } from './tool/tool.module';
     }),
     UsersModule,
     JobModule,
+    SpeechModule,
   ],
   controllers: [AppController],
   providers: [AppService],
